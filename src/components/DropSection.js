@@ -1,5 +1,6 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
+import XLSX from 'xlsx'
 
 
 
@@ -29,7 +30,16 @@ class UploadScreen extends React.Component {
         reader.onload = () => {
             const fileAsBinaryString = reader.result;
             // do whatever you want with the file content
-            console.log(fileAsBinaryString)
+            const wb = XLSX.read(fileAsBinaryString, {type:'binary'})
+            /*Get first worksheet */
+            const wsname = wb.SheetNames[0];
+            const ws = wb.Sheets[wsname];
+            /*Convert array of arrays */
+            const data = XLSX.utils.sheet_to_csv(ws,{header:1})
+
+            /*update state*/
+
+            console.log("data >>>" + data)
         };
         reader.onabort = () => console.log('file reading was aborted');
         reader.onerror = () => console.log('file reading has failed');
