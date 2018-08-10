@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import DropSection from "./components/DropSection";
-import { Drawer } from '@material-ui/core/Drawer';
-import 'react-datasheet/lib/react-datasheet.css';
+import "react-datasheet/lib/react-datasheet.css";
 
 class App extends Component {
   constructor(props) {
@@ -20,10 +19,7 @@ class App extends Component {
 
   render() {
     return (
-
       <div className="App">
-
-
         <DropSection
           triggerFileChange={() => {
             this.changeFile.bind(this);

@@ -2,13 +2,13 @@ import React from "react";
 import Dropzone from "react-dropzone";
 import XLSX from "xlsx";
 
-import { withStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
-import Typography from '@material-ui/core/Typography';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import DataSheet from './DataSheet';
+import Typography from "@material-ui/core/Typography";
+import AppBar from "@material-ui/core/AppBar";
+import Toolbar from "@material-ui/core/Toolbar";
+import DataSheet from "./DataSheet";
+import Menu from "@material-ui/core/Menu"
 
 class DropSection extends React.Component {
   constructor(props) {
@@ -18,6 +18,7 @@ class DropSection extends React.Component {
       message: "Upload a file to start validating",
       fileIsDropped: false,
       dropzoneActive: false,
+      data: [[1,0,2,1,3,2], [1,2,3,1,1]]
     };
   }
 
@@ -34,13 +35,13 @@ class DropSection extends React.Component {
   }
 
   onDrop(files) {
-    const file = files[0]
+    const file = files[0];
     // console.log("Accepted Files :", file.name);
     this.setState({
       files: files,
       fileIsDropped: true,
       message: file.name + ". file size :" + file.size / 1000 + "k",
-      dropzoneActive: false,
+      dropzoneActive: false
     });
     // console.log("all done");
   }
@@ -55,11 +56,17 @@ class DropSection extends React.Component {
       const wsname = wb.SheetNames[0];
       const ws = wb.Sheets[wsname];
       /*Convert array of arrays */
-      const data = XLSX.utils.sheet_to_csv(ws, { header: 1 });
+      const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      const dataFiltered = data.filter((ele) => ele.join("") !== "" )
+      
 
       /*update state*/
 
-      console.log("data >>>" + data);
+      this.setState({
+        data: dataFiltered.slice(1, data.length)
+      })
+
+      console.log(this.state.data)
     };
     reader.onabort = () => console.log("file reading was aborted");
     reader.onerror = () => console.log("file reading has failed");
@@ -70,7 +77,6 @@ class DropSection extends React.Component {
   handleFileUploadClick(file) {
     const fileIsDropped = this.state.fileIsDropped;
     if (fileIsDropped) {
-      console.log("test");
       this.fileReader(file);
     } else {
       this.setState({
@@ -81,6 +87,11 @@ class DropSection extends React.Component {
 
   render() {
     const { accept, files, dropzoneActive } = this.state;
+    //const titles = ['Company', 'Product', 'Channel', 'Account'];
+    const titles = ['Driver Amount', 'Allocated', 'CostPool', 'Scenario', 'Time', 'Channel', 'Product', 'Percent'];
+    const data = this.state.data;
+    const rowCount = Math.max(data.length, 25)
+
     const overlayStyle = {
       position: "absolute",
       top: 0,
@@ -90,30 +101,29 @@ class DropSection extends React.Component {
       padding: "2.5em 0",
       background: "rgba(0,0,0,0.5)",
       textAlign: "center",
-      color: "#ffffff" ,
-      
+      color: "#ffffff"
     };
 
     return (
       <div>
-        <AppBar position="static" color = "default">
+        <AppBar position="static" color="default">
           <Toolbar>
             <Grid container spacing={24}>
               <Grid item xs={2}>
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={this.handleFileUploadClick.bind(this,files[0])}
+                  onClick={this.handleFileUploadClick.bind(this, files[0])}
                 >
                   Upload
                 </Button>
               </Grid>
-            <Grid item xs={10} >
-              <Typography variant="headline" component="h1">
+              <Grid item xs={10}>
+                <Typography variant="headline" component="h1">
                   {this.state.message}
-              </Typography>
+                </Typography>
+              </Grid>
             </Grid>
-          </Grid>
           </Toolbar>
         </AppBar>
         <div className="row">
@@ -124,11 +134,14 @@ class DropSection extends React.Component {
             onDragLeave={this.onDragLeave.bind(this)}
             multiple={false}
             disableClick
-            
           >
             {dropzoneActive && <div style={overlayStyle}>Drop file here</div>}
-            <div className={'sheet-container'}>
-              <DataSheet/>
+            <div className={"sheet-container"}>
+              <DataSheet
+                titles={titles}
+                data = {data}
+                rowCount = {rowCount}
+               />
             </div>
           </Dropzone>
         </div>

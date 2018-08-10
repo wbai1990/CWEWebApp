@@ -1,57 +1,90 @@
 import React from "react";
-import ReactDataSheet from 'react-datasheet';
+import ReactDataSheet from "react-datasheet";
 // Be sure to include styles at some point, probably during your bootstrapping
 
+class DataSheet extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      grid:[],
+    };
+  }
 
-class DataSheet extends React.Component{
+ 
 
-    constructor (props) {
-        super(props)
-        this.state = {
-          grid: [
-            [
-              {readOnly: true, value: ''},
-              {value: 'Plan Company', readOnly: true},
-              {value: 'Product', readOnly: true},
-              {value: 'Channel', readOnly: true},
-              {value: 'Account', readOnly: true},
-              {value: 'Jan', readOnly: true},
-              {value: 'Feb', readOnly: true},
-              {value: 'Mar', readOnly: true},
-              {value: 'Apr', readOnly: true},
-              {value: 'May', readOnly: true},
-              {value: 'Jun', readOnly: true},
-              {value: 'Jul', readOnly: true},
-              {value: 'Aug', readOnly: true},
-              {value: 'Sep', readOnly: true},
-              {value: 'Oct', readOnly: true},
-              {value: 'Nov', readOnly: true},
-              {value: 'Dec', readOnly: true},
-              
-            ],
-            [{readOnly: true, value: 1}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}],
-            [{readOnly: true, value: 2}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}],
-            [{readOnly: true, value: 3}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}],
-            [{readOnly: true, value: 4}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}, {value: null}],
-          ]
+  generateGrid(){
+    let rows = [];
+
+    // parse first title row
+    let titleRow =[[{readOnly:true, value:null}]];
+    for (var i = 0; i < this.props.titles.length; i ++){
+      titleRow[0].push({readOnly: true, value: `${this.props.titles[i]}`})
+    }
+    rows = rows.concat(titleRow)
+    // process data rows
+    const rowCount = this.props.rowCount;
+    const data = this.props.data;
+    const titles = this.props.titles;
+    for (i = 0; i < rowCount; i ++){
+      var row = [{readOnly: true, value : `${i+1}`}]
+    
+      if (i < data.length){
+        for (var j = 0; j < titles.length; j ++){
+          const content = data[i][j] || data[i][j] === 0 ? {readOnly:false, value:`${data[i][j]}`} : {readOnly:false, value: null}
+          row.push(content)
+        }
+      } else {
+        for (j = 0; j < titles.length; j ++){
+          row.push({readOnly:false, value:null})
         }
       }
-      render () {
-        return (
-          <ReactDataSheet
-            data={this.state.grid}
-            valueRenderer={(cell) => cell.value}
-            onContextMenu={(e, cell, i, j) => cell.readOnly ? e.preventDefault() : null}
-            onCellsChanged={changes => {
-              const grid = this.state.grid.map(row => [...row])
-              changes.forEach(({cell, row, col, value}) => {
-                grid[row][col] = {...grid[row][col], value}
-              })
-              this.setState({grid})
-            }}
-          />
-        )
-      }
+      rows.push(row)
+    }
+
+    return rows;
+  }
+
+  handleChanges (change){
+
+  }
+
+  componentDidMount(){
+    this.setState({
+      grid:this.generateGrid(),
+    })
+  }
+
+  componentDidUpdate(prevProps){
+    if(prevProps.data !== this.props.data || prevProps.rowCount !== this.props.rowCount) {
+      this.setState({
+        grid:this.generateGrid()
+      })
+    }
+  }
+
+  render() {
+    return (
+      <div>
+        <ReactDataSheet
+          data={this.state.grid}
+          valueRenderer={cell => cell.value}
+          onContextMenu={(e, cell, i, j) =>
+            cell.readOnly ? e.preventDefault() : null
+          }
+          onCellsChanged={changes => {
+            const grid = this.state.grid.map(row => [...row]);
+            changes.forEach(({ cell, row, col, value }) => {
+              grid[row][col] = { ...grid[row][col], value };
+            });
+            this.setState({ grid });
+          }}
+        >
+  
+        </ReactDataSheet>
+      </div>
+
+    );
+  }
 }
 
-export default DataSheet
+export default DataSheet;
